@@ -1,13 +1,14 @@
 #include "lib/global.h"
-#include"lib/jshell.h"
-
+#include "lib/jshell.h"
+#include "lib/util.h"
 int main()
 {
 
 	char path[MAX_PATH_SIZE];
 	char inputBuff[MAX_INPUT_SIZE];
 	char* args[MAX_NUM_OF_ARGS];
-	
+	int isBuiltIn = 0;
+	int shellRunning = 1;
 	printf(
 		ANSI_COLOR_BLUE 
 		"                __                             __       		\n" 
@@ -31,21 +32,34 @@ int main()
 	{
 		printf("%s > ", path);
 	}
-	
-	bool shellRunning = true;
+		
 	while (shellRunning)
 	{
-
+		isBuiltIn = 0;
 		if (getcwd(path, sizeof(path)) != NULL)
 		{
 			fgets(inputBuff, MAX_INPUT_SIZE, stdin);
-			inputBuff[strcspn(inputBuff, "\n")] = '\0'; // remove newline
-
+			inputBuff[strcspn(inputBuff, "\n")] = '\0';
 			parseArgs(args, inputBuff);
 
-			if (args[0])
+			if (args[0] == NULL)
 			{
+				printf("%s > ", path);
+				continue;
+			}
 
+			if (strcmp(args[0], "cd") == 0) {
+				if (args[1] == NULL) {
+					fprintf(stderr, "cd: missing argument\n");
+				} else if (chdir(args[1]) == -1) {
+					perror("cd");
+				}
+				continue;
+			}
+
+			if (!isBuiltIn)
+			{
+				// TODO: built-in handle
 				if (strcmp(args[0], "exit") == 0)
 				{
 					return 0;
@@ -58,45 +72,19 @@ int main()
 				if (child_pid == -1)
 				{
 					perror("Could not create fork");
-					exit(1);
+					exit(EXIT_FAILURE);
 				}
 				if (pid == child_ppid)
 				{
 					execvp(args[0], args);
-					exit(0);
+					perror("execvp");
+					exit(EXIT_FAILURE);
 				}
-				wait();
-				// TODO: add "unknown command"
-
-				// TODO: add "type --help ..."
+				// execute built-in commands in parent process
+				wait(NULL);
 			}
 			printf("%s > ", path);
 		}
 	}
 	return 0;
-}
-
-void parseArgs(char* args[], char inputBuff[])
-{
-	
-	__uint8_t i = 0;
-	__uint8_t k = 0;
-	bool inArg = false;
-
-	while (inputBuff[i] != '\0')
-	{
-		if (inputBuff[i] != ' ' && !inArg)
-		{
-			args[k] = &inputBuff[i];
-			inArg = true;
-			k++;
-		}
-		else if (inputBuff[i] == ' ' && inArg)
-		{
-			inputBuff[i] = '\0';
-			inArg = false;
-		}
-		i++;
-	}
-	args[k] = NULL;
 }
