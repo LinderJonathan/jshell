@@ -10,4 +10,4 @@ src/%.o: src/%.c $(DEPS)
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 all: $(OBJECTS)
-	$(CC) jshell.o src/util.o -o bin/jshell
+	$(CC) $(OBJECTS) -o bin/jshell

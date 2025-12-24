@@ -6,7 +6,7 @@ int main()
 
 	char path[MAX_PATH_SIZE];
 	char inputBuff[MAX_INPUT_SIZE];
-	char* args[MAX_NUM_OF_ARGS];
+	char *args[MAX_NUM_OF_ARGS];
 	int isBuiltIn = 0;
 	int shellRunning = 1;
 	printf(
