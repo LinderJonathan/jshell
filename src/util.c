@@ -39,12 +39,13 @@ void parseArgs(char* args[], char inputBuff[])
 	args[k] = NULL;
 }
 
-
 int runBuiltIn(char *args[])
 {
 
 }
 
+// TODO: add isBuiltIn check inside runBuiltIn
+// TODO: remove this function
 int isBuiltIn(const char *cmd)
 {
 	for (int i = 0; i < NUM_BUILTIN; i++)
