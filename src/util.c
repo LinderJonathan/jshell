@@ -13,12 +13,12 @@ builtIn builtIns[] =
 	}
 };
 
-int NUM_BUILTIN = sizeof(builtIns) / sizeof(builtIn);
+const int NUM_BUILTIN = sizeof(builtIns) / sizeof(builtIn);
 
 void parseArgs(char* args[], char inputBuff[])
 {
-	__uint8_t i = 0;
-	__uint8_t k = 0;
+	int i = 0;
+	int k = 0;
 	bool inArg = false;
 
 	while (inputBuff[i] != '\0')
@@ -40,6 +40,22 @@ void parseArgs(char* args[], char inputBuff[])
 }
 
 
+int runBuiltIn(char *args[])
+{
+
+}
+
+int isBuiltIn(const char *cmd)
+{
+	for (int i = 0; i < NUM_BUILTIN; i++)
+	{
+		if (strcmp(cmd, builtIns[i].name) == 0)
+		{
+			return i;
+		} 
+	}
+	return -1;
+}
 int builtInJcd(char *args[])
 {
 	if (args[1] == NULL)
@@ -56,5 +72,5 @@ int builtInJcd(char *args[])
 
 int builtInJexit(char *args[])
 {
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
