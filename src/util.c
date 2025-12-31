@@ -13,7 +13,16 @@ builtIn builtIns[] =
 	}
 };
 
-const int NUM_BUILTIN = sizeof(builtIns) / sizeof(builtIn);
+const size_t NUM_BUILTIN = sizeof(builtIns) / sizeof(builtIn);
+
+void printPath(char *path, size_t size)
+{
+
+	if (getcwd(path, size) != NULL)
+	{
+		printf("%s > ", path);
+	}
+}
 
 void parseArgs(char* args[], char inputBuff[])
 {
@@ -41,22 +50,17 @@ void parseArgs(char* args[], char inputBuff[])
 
 int runBuiltIn(char *args[])
 {
-
-}
-
-// TODO: add isBuiltIn check inside runBuiltIn
-// TODO: remove this function
-int isBuiltIn(const char *cmd)
-{
 	for (int i = 0; i < NUM_BUILTIN; i++)
 	{
-		if (strcmp(cmd, builtIns[i].name) == 0)
+		if (strcmp(args[0], builtIns[i].name) == 0)
 		{
+			builtIns[i].func(args);
 			return i;
 		} 
 	}
 	return -1;
 }
+
 int builtInJcd(char *args[])
 {
 	if (args[1] == NULL)
@@ -74,4 +78,19 @@ int builtInJcd(char *args[])
 int builtInJexit(char *args[])
 {
 	exit(EXIT_SUCCESS);
+}
+
+void handleSignal(int signal)
+{
+	if (signal == SIGTERM)
+	{
+		write(STDOUT_FILENO, "signal handling\n", 15);
+		write(STDOUT_FILENO, "\n", 0);
+		exit(EXIT_SUCCESS);
+	}
+
+	// TODO: exit program if SIGINT is recieved
+	//signal(SIGINT, handleSigInt);
+	// TODO: handle 'arrow-up'
+	// TODO: handle 'arrow-down'
 }

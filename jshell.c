@@ -1,8 +1,12 @@
 #include "lib/global.h"
 #include "lib/jshell.h"
 #include "lib/util.h"
+
 int main()
 {
+
+	struct sigaction sa = {.sa_handler = handleSignal};
+	int sigret = sigaction(SIGINT, &sa, NULL);
 
 	char path[MAX_PATH_SIZE];
 	char inputBuff[MAX_INPUT_SIZE];
@@ -28,41 +32,27 @@ int main()
 		"\n"
 	);
 
-	if (getcwd(path, sizeof(path)) != NULL)
-	{
-		printf("%s > ", path);
-	}
-		
+	printPath(path, sizeof path);
 	while (shellRunning)
 	{
+		// TODO: implement syntax history
 		builtInHandled = 0;
 		if (getcwd(path, sizeof(path)) != NULL)
 		{
+			// TODO: handle 'EOF' being passed to FGETS
 			fgets(inputBuff, MAX_INPUT_SIZE, stdin);
 			inputBuff[strcspn(inputBuff, "\n")] = '\0';
 			parseArgs(args, inputBuff);
 
 			if (args[0] == NULL)
 			{
-				printf("%s > ", path);
+				printPath(path, sizeof path);
 				continue;
 			}
+
 			
-			for (int i = 0; i < NUM_BUILTIN; i++)
-			{
-				if (strcmp(args[0],builtIns[i].name) == 0)
-				{
-					builtIns[i].func(args);
-					builtInHandled = 1;
-					break;
-				}
-			}
-			if (builtInHandled)
-			{
-				printf("%s > ", path);
-				continue;
-			}
-			else
+			int builtInHandled = runBuiltIn(args);
+			if (builtInHandled == BUILT_IN_NOT_HANDLED)
 			{
 				__pid_t pid = getpid();
 				__pid_t child_pid = fork();
@@ -82,9 +72,7 @@ int main()
 				// execute built-in commands in parent process
 				wait(NULL);
 			}
-
-			getcwd(path, sizeof(path));
-			printf("%s > ", path);
+			printPath(path, sizeof path);
 		}
 	}
 	return 0;

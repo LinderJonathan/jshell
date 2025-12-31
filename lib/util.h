@@ -1,14 +1,17 @@
 #include "global.h"
 
 
-typedef struct builtIn {
+typedef struct builtIn
+{
 	const char *name;
 	int (*func)(char *args[]);
 } builtIn;
 
 extern builtIn builtIns[];
-extern const int NUM_BUILTIN;
-
+extern const size_t NUM_BUILTIN;
+void printPath(char *path, size_t size);
+void parseArgs(char *args[], char inputBuff[]);
+int runBuiltIn(char *args[]);
 int builtInJcd(char *args[]);
 int builtInJexit(char *args[]);
-void parseArgs(char *args[], char inputBuff[]);
+void handleSignal(int signal);
