@@ -89,8 +89,6 @@ void handleSignal(int signal)
 		exit(EXIT_SUCCESS);
 	}
 
-	// TODO: exit program if SIGINT is recieved
-	//signal(SIGINT, handleSigInt);
 	// TODO: handle 'arrow-up'
 	// TODO: handle 'arrow-down'
 }

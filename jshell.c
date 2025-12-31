@@ -39,8 +39,11 @@ int main()
 		builtInHandled = 0;
 		if (getcwd(path, sizeof(path)) != NULL)
 		{
-			// TODO: handle 'EOF' being passed to FGETS
-			fgets(inputBuff, MAX_INPUT_SIZE, stdin);
+			// read input. If 'EOF', exit the program
+			if (fgets(inputBuff, MAX_INPUT_SIZE, stdin) == NULL)
+			{
+				exit(EXIT_SUCCESS);
+			}
 			inputBuff[strcspn(inputBuff, "\n")] = '\0';
 			parseArgs(args, inputBuff);
 
