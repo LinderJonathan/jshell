@@ -11,6 +11,7 @@
 #include<stdbool.h>
 #include<string.h>
 #include<signal.h>
+#include<termios.h>
 #include<sys/wait.h>
 
 #define ANSI_COLOR_BLUE "\033[38;5;27m"

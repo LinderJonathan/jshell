@@ -5,14 +5,25 @@
 int main()
 {
 
+	struct termios tsNew, tsOrig;
+
+	// save original settings 
+	tcgetattr(STDIN_FILENO, &tsOrig);
+	tsNew = tsOrig;
+	tsNew.c_lflag &= ~(ICANON | ECHO);
+	tsNew.c_cc[VMIN] = 1;
+	tsNew.c_cc[VTIME] = 0;
+
 	struct sigaction sa = {.sa_handler = handleSignal};
 	int sigret = sigaction(SIGINT, &sa, NULL);
 
 	char path[MAX_PATH_SIZE];
 	char inputBuff[MAX_INPUT_SIZE];
 	char *args[MAX_NUM_OF_ARGS];
+	int fetchedCommandHistory = 0;
 	int builtInHandled = 0;
 	int shellRunning = 1;
+
 	printf(
 		ANSI_COLOR_BLUE 
 		"                __                             __       		\n" 
@@ -31,19 +42,15 @@ int main()
 		"\n"
 		"\n"
 	);
-
 	printPath(path, sizeof path);
 	while (shellRunning)
 	{
-		// TODO: implement syntax history
+		
 		builtInHandled = 0;
 		if (getcwd(path, sizeof(path)) != NULL)
 		{
-			// read input. If 'EOF', exit the program
-			if (fgets(inputBuff, MAX_INPUT_SIZE, stdin) == NULL)
-			{
-				exit(EXIT_SUCCESS);
-			}
+			readInput(&tsNew, &tsOrig, inputBuff, sizeof inputBuff);
+
 			inputBuff[strcspn(inputBuff, "\n")] = '\0';
 			parseArgs(args, inputBuff);
 
@@ -53,7 +60,6 @@ int main()
 				continue;
 			}
 
-			
 			int builtInHandled = runBuiltIn(args);
 			if (builtInHandled == BUILT_IN_NOT_HANDLED)
 			{
@@ -78,5 +84,8 @@ int main()
 			printPath(path, sizeof path);
 		}
 	}
+
+	// restore terminal settings
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tsOrig);
 	return 0;
 }
