@@ -14,5 +14,4 @@ void parseArgs(char *args[], char inputBuff[]);
 int runBuiltIn(char *args[]);
 int builtInJcd(char *args[]);
 int builtInJexit(char *args[]);
-void handleSignal(int signal);
 int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, size_t bufferSize);

@@ -2,10 +2,25 @@
 #include "lib/jshell.h"
 #include "lib/util.h"
 
+static struct termios tsOrig;
+
+void handleSignal(int signal)
+{
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tsOrig);
+	printf("signal triggered\n");
+	if (signal == SIGINT)
+	{
+		write(STDOUT_FILENO, "signal handling\n", 15);
+		write(STDOUT_FILENO, "\n", 0);
+		exit(EXIT_SUCCESS);
+	}
+
+	// TODO: reset termios configuration
+}
+
 int main()
 {
-
-	struct termios tsNew, tsOrig;
+	struct termios tsNew;
 
 	// save original settings 
 	tcgetattr(STDIN_FILENO, &tsOrig);
@@ -89,3 +104,4 @@ int main()
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tsOrig);
 	return 0;
 }
+

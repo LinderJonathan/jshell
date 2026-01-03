@@ -1,5 +1,6 @@
 #include "../lib/global.h"
 #include "../lib/util.h"
+#include "../lib/jshell.h"
 
 builtIn builtIns[] = 
 {
@@ -81,17 +82,6 @@ int builtInJexit(char *args[])
 	exit(EXIT_SUCCESS);
 }
 
-void handleSignal(int signal)
-{
-	if (signal == SIGTERM)
-	{
-		write(STDOUT_FILENO, "signal handling\n", 15);
-		write(STDOUT_FILENO, "\n", 0);
-		exit(EXIT_SUCCESS);
-	}
-
-	// TODO: reset termios configuration
-}
 
 int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, size_t bufferSize)
 {
@@ -99,7 +89,7 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, tsNew);
 	int i = 0;
 	char c;
-	while (i < bufferSize)
+	while (i < bufferSize - 1)
 	{
 		// if byte read and written to buffer
 		if (read(STDIN_FILENO, &c, 1) == 1)
@@ -108,12 +98,22 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 			if (c == '\n')
 			{
 				write(STDOUT_FILENO, "\n", 1);
-				tcsetattr(STDIN_FILENO, TCSAFLUSH, tsOld);
-				return 1;
+				break;
 			}
 
+			// handle tab, depending on shell tab length
+			else if (c == '\t')
+			{
+				for (int j = 0; j < SHELL_TAB_LENGTH && i < bufferSize - 1; j++)
+				{
+					inputBuffer[i] = ' ';
+					i++;
+					write(STDOUT_FILENO, " ", 1);
+				}
+				continue;
+			}
 			// handle backspace
-			if (c == 0x7f || c == '\b')
+			else if (c == 0x7f || c == '\b')
 			{
 				// TODO: if i > 0, set value at index i-1 to NULL. decrement i
 				if (i > 0)
@@ -125,7 +125,7 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 				continue;
 			}
 			// handle arrow up or down
-			if (c == '\x1b')
+			else if (c == '\x1b')
 			{
 				char seq[2];
 				read(STDIN_FILENO, &seq[0], 1);
@@ -149,14 +149,12 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 						// TODO: write bytes to command line
 					}
 				}
+				continue;
 			}
-			inputBuffer[i] = c;
-			write(STDOUT_FILENO, &inputBuffer[i], 1);
 		}
-		i++;
+		inputBuffer[i++] = c;
+		write(STDOUT_FILENO, &c, 1);
 	}
-
-	//read(STDIN_FILENO, &c, 1);
 
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, tsOld);
 	return 0;
