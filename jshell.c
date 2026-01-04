@@ -3,6 +3,7 @@
 #include "lib/util.h"
 
 static struct termios tsOrig;
+char *commandHistory[MAX_NUM_COMMAND_HISTORY];
 
 void handleSignal(int signal)
 {
@@ -75,6 +76,10 @@ int main()
 				continue;
 			}
 
+			// TODO: fill command history with input in buffer each iteration
+			commandHistory[0] = inputBuff;
+
+			printf("%s", commandHistory[0]);
 			int builtInHandled = runBuiltIn(args);
 			if (builtInHandled == BUILT_IN_NOT_HANDLED)
 			{

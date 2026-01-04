@@ -136,17 +136,17 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 					if (seq[1] == 'A')
 					{
 						printf("up arrow pressed\n");
-						// TODO: fetch from command history 
-
-						// TODO: write bytes to command line
+						// TODO: fetch from command history array
+						// TODO: decrement pointer to commandHistory array
+						// TODO: write bytes to command line at pointer
 					}
 					// handle DOWN
 					else if (seq[1] == 'B')
 					{
 						printf("down arrow pressed\n");
 						// TODO: fetch from command history array
-
-						// TODO: write bytes to command line
+						// TODO: decrement pointer to commandHistory array
+						// TODO: write bytes to command line at pointer
 					}
 				}
 				continue;
