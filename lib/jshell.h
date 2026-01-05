@@ -11,3 +11,4 @@
 #define BUILT_IN_NOT_HANDLED            -1
 
 extern char *commandHistory[MAX_NUM_COMMAND_HISTORY];
+extern int commandIndex;

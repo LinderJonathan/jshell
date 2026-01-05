@@ -4,7 +4,9 @@
 
 static struct termios tsOrig;
 char *commandHistory[MAX_NUM_COMMAND_HISTORY];
-
+int commandHead = 0;
+int commandEnd = 0;
+int commandIndex = 0;
 void handleSignal(int signal)
 {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tsOrig);

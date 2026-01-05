@@ -139,6 +139,7 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 						// TODO: fetch from command history array
 						// TODO: decrement pointer to commandHistory array
 						// TODO: write bytes to command line at pointer
+						
 					}
 					// handle DOWN
 					else if (seq[1] == 'B')
