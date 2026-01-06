@@ -16,6 +16,15 @@ builtIn builtIns[] =
 
 const size_t NUM_BUILTIN = sizeof(builtIns) / sizeof(builtIn);
 
+// Clear 'bufferLength' amount of char from command line.
+void clearLine(int bufferLength)
+{
+	for (int i = 0; i < bufferLength; i++)
+	{
+		write(STDOUT_FILENO, "\b \b", 3);
+	}
+}
+
 void printPath(char *path, size_t size)
 {
 
@@ -87,9 +96,9 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 {
 	memset(inputBuffer, 0, bufferSize);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, tsNew);
-	int i = 0;
+	int inputLength = 0;
 	char c;
-	while (i < bufferSize - 1)
+	while (inputLength < bufferSize - 1)
 	{
 		// if byte read and written to buffer
 		if (read(STDIN_FILENO, &c, 1) == 1)
@@ -98,16 +107,24 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 			if (c == '\n')
 			{
 				write(STDOUT_FILENO, "\n", 1);
+
+				if (inputLength == 0) { break; }
+				strcpy(commandHistory[commandHead], inputBuffer);
+				// increment commandHead, set index where head is
+				// If not, commandIndex would point at an old command; 
+				commandHead = (commandHead + 1) % MAX_NUM_COMMAND_HISTORY;
+				commandIndex = commandHead;
+				if (commandLen < MAX_NUM_COMMAND_HISTORY) { commandLen++; }
 				break;
 			}
 
 			// handle tab, depending on shell tab length
 			else if (c == '\t')
 			{
-				for (int j = 0; j < SHELL_TAB_LENGTH && i < bufferSize - 1; j++)
+				for (int j = 0; j < SHELL_TAB_LENGTH && inputLength < bufferSize - 1; j++)
 				{
-					inputBuffer[i] = ' ';
-					i++;
+					inputBuffer[inputLength] = ' ';
+					inputLength++;
 					write(STDOUT_FILENO, " ", 1);
 				}
 				continue;
@@ -115,11 +132,9 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 			// handle backspace
 			else if (c == 0x7f || c == '\b')
 			{
-				// TODO: if i > 0, set value at index i-1 to NULL. decrement i
-				if (i > 0)
+				if (inputLength > 0)
 				{
-					i--;
-					inputBuffer[i] = '\0';
+					inputLength--;
 					write(STDOUT_FILENO, "\b \b", 3);
 				}
 				continue;
@@ -135,25 +150,23 @@ int readInput(struct termios *tsNew, struct termios *tsOld, char *inputBuffer, s
 					// handle UP
 					if (seq[1] == 'A')
 					{
-						printf("up arrow pressed\n");
-						// TODO: fetch from command history array
-						// TODO: decrement pointer to commandHistory array
-						// TODO: write bytes to command line at pointer
+						if (commandLen == 0) { return 0; }
+						commandIndex = (commandIndex + 1) % commandLen;
 						
 					}
 					// handle DOWN
 					else if (seq[1] == 'B')
 					{
-						printf("down arrow pressed\n");
-						// TODO: fetch from command history array
-						// TODO: decrement pointer to commandHistory array
-						// TODO: write bytes to command line at pointer
+						if (commandLen == 0) { return 0; }
+						commandIndex = (commandIndex - 1 + MAX_NUM_COMMAND_HISTORY) % MAX_NUM_COMMAND_HISTORY;
 					}
+					clearLine(inputLength);
+					write(STDOUT_FILENO, commandHistory[commandIndex], sizeof commandHistory[commandIndex]);
 				}
 				continue;
 			}
 		}
-		inputBuffer[i++] = c;
+		inputBuffer[inputLength++] = c;
 		write(STDOUT_FILENO, &c, 1);
 	}
 

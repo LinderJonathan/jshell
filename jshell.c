@@ -3,10 +3,11 @@
 #include "lib/util.h"
 
 static struct termios tsOrig;
-char *commandHistory[MAX_NUM_COMMAND_HISTORY];
+char commandHistory[MAX_NUM_COMMAND_HISTORY][MAX_BUILT_IN_COMMAND_LETTERS];
 int commandHead = 0;
-int commandEnd = 0;
+int commandLen = 0;
 int commandIndex = 0;
+
 void handleSignal(int signal)
 {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &tsOrig);
@@ -17,8 +18,6 @@ void handleSignal(int signal)
 		write(STDOUT_FILENO, "\n", 0);
 		exit(EXIT_SUCCESS);
 	}
-
-	// TODO: reset termios configuration
 }
 
 int main()
@@ -38,7 +37,6 @@ int main()
 	char path[MAX_PATH_SIZE];
 	char inputBuff[MAX_INPUT_SIZE];
 	char *args[MAX_NUM_OF_ARGS];
-	int fetchedCommandHistory = 0;
 	int builtInHandled = 0;
 	int shellRunning = 1;
 
@@ -79,7 +77,6 @@ int main()
 			}
 
 			// TODO: fill command history with input in buffer each iteration
-			commandHistory[0] = inputBuff;
 
 			printf("%s", commandHistory[0]);
 			int builtInHandled = runBuiltIn(args);
@@ -100,7 +97,7 @@ int main()
 					perror("execvp");
 					exit(EXIT_FAILURE);
 				}
-				// execute built-in commands in parent process
+				// TODO: any code in parent process?
 				wait(NULL);
 			}
 			printPath(path, sizeof path);
